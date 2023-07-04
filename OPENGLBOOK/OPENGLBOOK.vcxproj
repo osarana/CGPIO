@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Sphere.cpp" />
+    <ClCompile Include="src\Torus.cpp" />
     <ClCompile Include="src\utils.cpp" />
     <ClCompile Include="src\vendor\glm\detail\glm.cpp" />
     <ClCompile Include="src\vendor\SOIL2\image_DXT.c" />
@@ -306,6 +307,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Sphere.h" />
+    <ClInclude Include="src\Torus.h" />
     <ClInclude Include="src\utils.h" />
     <ClInclude Include="src\vendor\glm\common.hpp" />
     <ClInclude Include="src\vendor\glm\detail\compute_common.hpp" />

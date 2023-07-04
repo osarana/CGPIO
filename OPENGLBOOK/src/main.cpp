@@ -11,14 +11,15 @@
 #include <SOIL2/SOIL2.h>
 #include "utils.h"
 #include "Sphere.h"
+#include "Torus.h"
 
 using namespace std;
 
 #define numVAOs 1
-#define numVBOs 3
+#define numVBOs 4
 #define vShaderPath "c:\\Users\\oscar\\source\\repos\\OPENGLBOOK\\OPENGLBOOK\\vertShader.glsl"
 #define fShaderPath "C:\\Users\\oscar\\source\\repos\\OPENGLBOOK\\OPENGLBOOK\\fragShader.glsl"
-#define brickPath "C:\\Users\\oscar\\source\\repos\\OPENGLBOOK\\OPENGLBOOK\\earth.jpg"
+#define brickPath "C:\\Users\\oscar\\source\\repos\\OPENGLBOOK\\OPENGLBOOK\\brick1.jpg"
 
 float cameraX, cameraY, cameraZ;
 float cubeLocX, cubeLocY, cubeLocZ;
@@ -35,34 +36,34 @@ float aspect, timeFactor;
 glm::mat4 pMat, vMat, tMat, rMat, mMat, mvMat;
 stack<glm::mat4> mvStack;
 
-Sphere mySphere(48);
+Torus myTorus(0.5f, 0.2f, 48);
 
 // 36 VERTICES, 12 TRIANGLES, MAKES 2X2X2 CUBE PLACED AT ORIGIN
 void setupVertices(void)
 {
-	std::vector<int> ind = mySphere.getIndices();
-	std::vector<glm::vec3> vert = mySphere.getVertices();
-	std::vector<glm::vec2> tex = mySphere.getTexCoords();
-	std::vector<glm::vec3> norm = mySphere.getNormals();
+	std::vector<int> ind = myTorus.getIndices();
+	std::vector<glm::vec3> vert = myTorus.getVertices();
+	std::vector<glm::vec2> tex = myTorus.getTexCoords();
+	std::vector<glm::vec3> norm = myTorus.getNormals();
 
 	std::vector<float> pvalues; // vertex positions
 	std::vector<float> tvalues; // texture coordinates
 	std::vector<float> nvalues; // normal vectors
 
-	int numIndices = mySphere.getNumIndices();
+	int numVertices = myTorus.getNumVertices();
 
-	for (int i = 0; i < numIndices; i++)
+	for (int i = 0; i < numVertices; i++)
 	{
-		pvalues.push_back((vert[ind[i]]).x);
-		pvalues.push_back((vert[ind[i]]).y);
-		pvalues.push_back((vert[ind[i]]).z);
+		pvalues.push_back(vert[i].x);
+		pvalues.push_back(vert[i].y);
+		pvalues.push_back(vert[i].z);
 
-		tvalues.push_back((tex[ind[i]]).s);
-		tvalues.push_back((tex[ind[i]]).t);
+		tvalues.push_back(tex[i].s);
+		tvalues.push_back(tex[i].t);
 
-		nvalues.push_back((norm[ind[i]]).x);
-		nvalues.push_back((norm[ind[i]]).y);
-		nvalues.push_back((norm[ind[i]]).z);
+		nvalues.push_back(norm[i].x);
+		nvalues.push_back(norm[i].y);
+		nvalues.push_back(norm[i].z);
 	}
 
 	glGenVertexArrays(1, vao);
@@ -81,6 +82,8 @@ void setupVertices(void)
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
 	glBufferData(GL_ARRAY_BUFFER, nvalues.size() * 4, &nvalues[0], GL_STATIC_DRAW);
 
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]); // indices
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, ind.size() * 4, &ind[0], GL_STATIC_DRAW);
 }
 
 void init(GLFWwindow* window) 
@@ -91,7 +94,7 @@ void init(GLFWwindow* window)
 	aspect = (float)width / (float)height;
 	pMat = glm::perspective(1.0472f, aspect, 0.1f, 1000.0f);
 
-	cameraX = 0.0f; cameraY = 2.0f; cameraZ = 12.0f;
+	cameraX = 0.0f; cameraY = 2.0f; cameraZ = 6.0f;
 	cubeLocX = 0.0f; cubeLocY = -2.0f; cubeLocZ = 0.0f; // shift down y to see perspective
 	pyrLocX = 2.0f; pyrLocY = 2.0f; pyrLocZ = 0.0f;
 	brickTexture = utils::loadTexture(brickPath);
@@ -141,6 +144,8 @@ void display(GLFWwindow* window, double currTime)
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(2);
 
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, brickTexture);
 
@@ -148,7 +153,7 @@ void display(GLFWwindow* window, double currTime)
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glFrontFace(GL_CCW);
-	glDrawArrays(GL_TRIANGLES, 0, mySphere.getNumIndices());
+	glDrawElements(GL_TRIANGLES, myTorus.getNumIndices(), GL_UNSIGNED_INT, 0);
 	mvStack.pop();
 
 	// CUBE PLANET
