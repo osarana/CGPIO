@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\ImportedModel.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Sphere.cpp" />
     <ClCompile Include="src\Torus.cpp" />
@@ -306,6 +307,7 @@
     <None Include="vertShader.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\ImportedModel.h" />
     <ClInclude Include="src\Sphere.h" />
     <ClInclude Include="src\Torus.h" />
     <ClInclude Include="src\utils.h" />
@@ -619,6 +621,7 @@
   <ItemGroup>
     <Image Include="brick1.jpg" />
     <Image Include="earth.jpg" />
+    <Image Include="white.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
