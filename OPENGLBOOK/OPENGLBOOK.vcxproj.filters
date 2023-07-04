@@ -36,6 +36,9 @@
     <ClCompile Include="src\vendor\SOIL2\wfETC.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Sphere.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertShader.glsl" />
@@ -1381,9 +1384,15 @@
     <ClInclude Include="src\vendor\SOIL2\wfETC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Sphere.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="brick1.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="earth.jpg">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
