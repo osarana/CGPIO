@@ -147,6 +147,7 @@ void display(GLFWwindow* window, double currTime)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
 
 	glActiveTexture(GL_TEXTURE0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glBindTexture(GL_TEXTURE_2D, brickTexture);
 
 	// ADJUST OPENGL SETTINGS AND DRAW PYRAMID
