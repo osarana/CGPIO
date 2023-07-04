@@ -1,7 +1,4 @@
 # CGPIO
-Implementations of various features found in the book Computer Graphics Programming in OpenGL - C++
+# Program 5.1++
 
-
-**Computer Graphics Programming In OpenGL Exercises**
-Below will be branches that have different programs from the book.
-
+C++ Program that includes a pyramid with a brick texture using mipmapping and anisotropic filtering.
