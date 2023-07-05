@@ -88,9 +88,9 @@ void init(GLFWwindow* window)
 
 	glfwGetFramebufferSize(window, &width, &height);
 	aspect = (float)width / (float)height;
-	pMat = glm::perspective(1.0472f, aspect, 0.1f, 1000.0f);
+	pMat = glm::perspective(1.0472f, aspect, 0.1f, 2000.0f);
 
-	cameraX = 0.0f; cameraY = 2.0f; cameraZ = 1000.0f;
+	cameraX = 0.0f; cameraY = 2.0f; cameraZ = 750.0f;
 	cubeLocX = 0.0f; cubeLocY = -2.0f; cubeLocZ = 0.0f; // shift down y to see perspective
 	pyrLocX = 2.0f; pyrLocY = 2.0f; pyrLocZ = 0.0f;
 	brickTexture = utils::loadTexture(brickPath);
