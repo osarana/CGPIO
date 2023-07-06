@@ -8,3 +8,6 @@ Below will be branches that have different programs from the book
 * [Program 6.1](https://github.com/osarana/CGPIO/tree/Program-6.1)
 * [Program 6.2](https://github.com/osarana/CGPIO/tree/Program-6.2)
 * [Program 6.3](https://github.com/osarana/CGPIO/tree/Program-6.3)
+* [Program 7.1](https://github.com/osarana/CGPIO/tree/Program-7.1)
+* [Program 7.2](https://github.com/osarana/CGPIO/tree/Program-7.2)
+* [Program 7.3](https://github.com/osarana/CGPIO/tree/Program-7.3)
