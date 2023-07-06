@@ -21,4 +21,16 @@ class utils
 		static unsigned int createShaderProgram(const char* vp, const char* tCS, const char* tES, const char* fp);
 		static unsigned int createShaderProgram(const char* vp, const char *tCS, const char *tES, const char *gp, const char* fp);
 		static unsigned int loadTexture(const char* texImagePath);
+		static float* goldAmbient();
+		static float* goldDiffuse();
+		static float* goldSpecular();
+		static float  goldShininess();
+		static float* silverAmbient();
+		static float* silverDiffuse();
+		static float* silverSpecular();
+		static float  silverShininess();
+		static float* bronzeAmbient();
+		static float* bronzeDiffuse();
+		static float* bronzeSpecular();
+		static float  bronzeShininess();
 };

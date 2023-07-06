@@ -1,101 +1,56 @@
 #version 430
+layout (location=0) in vec3 vertPos;
+layout (location=1) in vec3 vertNormal;
+out vec4 varyingColor;
 
-layout (location=0) in vec3 position;
-layout (location=1) in vec2 texCoord;
+struct PositionalLight
+{
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+	vec3 position;
+};
 
-out vec2 tc;
+struct Material
+{
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+	float shininess;
+};
+
+uniform vec4 globalAmbient;
+uniform PositionalLight light;
+uniform Material material;
 uniform mat4 mv_matrix;
 uniform mat4 proj_matrix;
-
-layout (binding=0) uniform sampler2D samp;
-
-// uniform float tf; // time factor for animation and placement of cubes
-
-// out vec4 varyingColor;
-
-// mat4 buildRotateX(float rad); // declaration of matrix transformation utility functions
-// mat4 buildRotateY(float rad); // GLSL requires functions to be declared prior to invocation
-// mat4 buildRotateZ(float rad);
-// mat4 buildTranslate(float x, float y, float z);
+uniform mat4 norm_matrix; // for transforming normals
 
 void main(void)
 {
-/*
-	float i = gl_InstanceID + tf; // value based on time factor, but different for each cube instanced
+	vec4 color;
 
-	float a = sin(203.0 * i/8000.0) * 403.0; // these are the x, y, and z compoonents for the translation below
-	float b = sin(301.0 * i/8000.0) * 401.0;
-	float c = sin(400.0 * i/8000.0) * 405.0;
+	// convert position to view space,
+	// convert normal to view space, and
+	// calculate view space light vector (from vertex to light)
+	vec4 P = mv_matrix * vec4(vertPos, 1.0);
+	vec3 N = normalize((norm_matrix * vec4(vertNormal, 1.0)).xyz);
+	vec3 L = normalize(light.position - P.xyz);
 
-	// build the rotation and translation matrices to be applied to this cube's model matrix
-	mat4 localRotX = buildRotateX(1.75 * i);
-	mat4 localRotY = buildRotateY(1.75 * i);
-	mat4 localRotZ = buildRotateZ(1.75 * i);
+	// view vector is equivalent to the negative of view space vertex position
+	vec3 V = normalize(-P.xyz);
 
-	mat4 localTrans = buildTranslate(a, b, c);
+	// R is reflection of -L with respect to surface normal N
+	vec3 R = reflect(-L, N);
 
-	// build the model matrix and then the model-view matrix
-	mat4 newM_matrix = localTrans * localRotX * localRotY * localRotZ;
-	mat4 mv_matrix = v_matrix * newM_matrix;
-*/
+	// ambient, diffuse, and specular contributions
+	vec3 ambient = ((globalAmbient * material.ambient) + (light.ambient * material.ambient)).xyz;
+	vec3 diffuse = light.diffuse.xyz * material.diffuse.xyz * max(dot(N, L), 0.0);
+	vec3 specular = material.specular.xyz * light.specular.xyz * pow(max(dot(R, V), 0.0f), material.shininess);
 
-	gl_Position = proj_matrix * mv_matrix * vec4(position, 1.0);
-	tc = texCoord;
+	// send the color output to the fragment shader
+	varyingColor = vec4((ambient + diffuse + specular), 1.0);
+
+	// send the position to the fragment shader, as before
+	gl_Position = proj_matrix * mv_matrix * vec4(vertPos, 1.0);
 }
-
-/*
-mat4 buildTranslate(float x, float y, float z)
-{
-	mat4 trans = mat4
-	(
-		1.0, 0.0, 0.0, 0.0,
-		0.0, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		x,   y,   z,   1.0
-	);
-
-	return trans;
-}
-
-// BUILDS AND RETURNS A MATRIX THAT PERFORMS A ROTATION AROUND THE X AXIS
-mat4 buildRotateX(float rad)
-{
-	mat4 xrot = mat4
-	(
-		1.0, 0.0, 0.0, 0.0,
-		0.0, cos(rad), -sin(rad), 0.0,
-		0.0, sin(rad), cos(rad), 0.0,
-		0.0, 0.0, 0.0, 1.0
-	);
-
-	return xrot;
-}
-
-// BUILDS AND RETURNS A MATRIX THAT PERFORMS A ROTATION AROUND THE Y AXIS
-mat4 buildRotateY(float rad)
-{
-	mat4 yrot = mat4
-	(
-		cos(rad), 0.0, sin(rad), 0.0,
-		0.0, 1.0, 0.0, 0.0,
-		-sin(rad), 0.0, cos(rad), 0.0,
-		0.0, 0.0, 0.0, 1.0
-	);
-
-	return yrot;
-}
-
-// BUILDS AND RETURNS A MATRIX THAT PERFORMS A ROTATION AROUND THE Z AXIS
-mat4 buildRotateZ(float rad)
-{
-	mat4 zrot = mat4
-	(
-		cos(rad), -sin(rad), 0.0, 0.0,
-		sin(rad), cos(rad), 0.0, 0.0,
-		0.0, 0.0, 1.0, 0.0,
-		0.0, 0.0, 0.0, 1.0
-	);
-
-	return zrot;
-}
-*/
