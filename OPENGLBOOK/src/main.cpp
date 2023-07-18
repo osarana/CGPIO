@@ -202,6 +202,9 @@ void setupShadowBuffers(GLFWwindow* window)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
 void init(GLFWwindow* window) 
@@ -244,7 +247,12 @@ void display(GLFWwindow* window, double currTime)
 	glDrawBuffer(GL_NONE);
 	glEnable(GL_DEPTH_TEST);
 
+	glEnable(GL_POLYGON_OFFSET_FILL);
+	glPolygonOffset(2.0f, 4.0f);
+
 	passOne();
+
+	glDisable(GL_POLYGON_OFFSET_FILL);
 
 	// restore the default display buffer, and re-enable drawing
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
