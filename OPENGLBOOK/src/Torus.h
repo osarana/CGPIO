@@ -19,7 +19,7 @@ class Torus
 		std::vector<glm::vec3> sTangents;
 		std::vector<glm::vec3> tTangents;
 		void init();
-		float toRadians(float degrees);
+		static float toRadians(float degrees);
 	public:
 		Torus();
 		Torus(float innerRadius, float outerRadius, int prec);
