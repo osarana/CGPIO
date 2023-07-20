@@ -26,20 +26,32 @@ uniform mat4 shadowMVP;
 
 layout (binding=0) uniform sampler2DShadow shTex;
 
+float lookup(float ox, float oy)
+{
+	float t = textureProj(shTex, shadow_coord + vec4(ox * 0.001 * shadow_coord.w, oy * 0.001 * shadow_coord.w, -0.01, 0.0));
+	return t;
+}
+
 void main(void)
 {
+	float shadowFactor = 0.0;
 	vec3 L = normalize(varyingLightDir);
 	vec3 N = normalize(varyingNormal);
 	vec3 V = normalize(-varyingVertPos);
 	vec3 H = normalize(varyingHalfVec);
 
-	float notInShadow = textureProj(shTex, shadow_coord);
+	float swidth = 2.5;
+	vec2 offset = mod(floor(gl_FragCoord.xy), 2.0) * swidth;
+	shadowFactor += lookup(-1.5 * swidth + offset.x,  1.5 * swidth - offset.y);
+	shadowFactor += lookup(-1.5 * swidth + offset.x, -0.5 * swidth - offset.y);
+	shadowFactor += lookup( 0.5 * swidth + offset.x,  1.5 * swidth - offset.y);
+	shadowFactor += lookup( 0.5 * swidth + offset.x, -0.5 * swidth - offset.y);
+	shadowFactor = shadowFactor / 4.0;
 
-	fragColor = globalAmbient * material.ambient + light.ambient * material.ambient;
+	vec4 shadowColor = globalAmbient * material.ambient + light.ambient * material.ambient;
 
-	if (notInShadow == 1.0)
-	{
-		fragColor += light.diffuse * material.diffuse * max(dot(L, N), 0.0) + light.specular * material.specular
+	vec4 lightedColor = light.diffuse * material.diffuse * max(dot(L, N), 0.0) + light.specular * material.specular
 		* pow(max(dot(H, N), 0.0), material.shininess * 3.0);
-	}
+
+	fragColor = vec4((shadowColor.xyz + shadowFactor * (lightedColor.xyz)), 1.0);
 }
