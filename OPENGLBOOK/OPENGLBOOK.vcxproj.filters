@@ -467,8 +467,6 @@
     <None Include="src\vendor\glm\gtx\wrap.inl">
       <Filter>Header Files</Filter>
     </None>
-    <None Include="fragShader2.glsl" />
-    <None Include="vertShader2.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\utils.h">
@@ -1401,5 +1399,13 @@
     <ClInclude Include="src\ImportedModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="alien.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="brick1.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

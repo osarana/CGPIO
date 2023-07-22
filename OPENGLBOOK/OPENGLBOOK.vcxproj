@@ -164,7 +164,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="fragShader.glsl" />
-    <None Include="fragShader2.glsl" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
     <None Include="src\vendor\glm\detail\func_common_simd.inl" />
     <None Include="src\vendor\glm\detail\func_exponential.inl" />
@@ -306,7 +305,6 @@
     <None Include="src\vendor\glm\gtx\wrap.inl" />
     <None Include="util.glsl" />
     <None Include="vertShader.glsl" />
-    <None Include="vertShader2.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ImportedModel.h" />
@@ -619,6 +617,10 @@
     <ClInclude Include="src\vendor\SOIL2\stb_image.h" />
     <ClInclude Include="src\vendor\SOIL2\stb_image_write.h" />
     <ClInclude Include="src\vendor\SOIL2\wfETC.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="alien.jpg" />
+    <Image Include="brick1.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
