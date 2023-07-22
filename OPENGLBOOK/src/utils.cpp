@@ -138,6 +138,36 @@ unsigned int utils::loadTexture(const char* texImagePath)
 	return textureID;
 }
 
+unsigned int utils::loadCubeMap(const char* mapDir)
+{
+	unsigned int textureRef;
+
+	// assumes that the six texture image files are named xp, xn, yp, yn, zp, zn and are JPG
+	string xp = mapDir; xp = xp + "/xp.jpg";
+	string xn = mapDir; xn = xn + "/xn.jpg";
+	string yp = mapDir; yp = yp + "/yp.jpg";
+	string yn = mapDir; yn = yn + "/yn.jpg";
+	string zp = mapDir; zp = zp + "/zp.jpg";
+	string zn = mapDir; zn = zn + "/zn.jpg";
+
+	textureRef = SOIL_load_OGL_cubemap(xp.c_str(), xn.c_str(), yp.c_str(), yn.c_str(), zp.c_str(), zn.c_str(),
+		SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+
+	if (textureRef == 0)
+	{
+		cout << "didnt find cube map image file" << endl;
+	}
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureRef);
+
+	// reduce seams
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	return textureRef;
+}
+
 float* utils::goldAmbient()
 {
 	static float a[4] = { 0.2473f, 0.1995f, 0.0745f, 1 };

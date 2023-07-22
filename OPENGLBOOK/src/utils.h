@@ -21,6 +21,7 @@ class utils
 		static unsigned int createShaderProgram(const char* vp, const char* tCS, const char* tES, const char* fp);
 		static unsigned int createShaderProgram(const char* vp, const char *tCS, const char *tES, const char *gp, const char* fp);
 		static unsigned int loadTexture(const char* texImagePath);
+		static unsigned int loadCubeMap(const char* mapDir);
 		static float* goldAmbient();
 		static float* goldDiffuse();
 		static float* goldSpecular();

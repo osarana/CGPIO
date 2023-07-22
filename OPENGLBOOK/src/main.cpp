@@ -23,10 +23,12 @@ float toRadians(float degrees) { return (degrees * 2.0f * 3.14159f) / 360.0f; }
 
 #define vShaderPath1 "c:\\Users\\oscar\\source\\repos\\OPENGLBOOK\\OPENGLBOOK\\vertShader.glsl"
 #define fShaderPath1 "C:\\Users\\oscar\\source\\repos\\OPENGLBOOK\\OPENGLBOOK\\fragShader.glsl"
+#define vShaderPath2 "c:\\Users\\oscar\\source\\repos\\OPENGLBOOK\\OPENGLBOOK\\vertCShader.glsl"
+#define fShaderPath2 "C:\\Users\\oscar\\source\\repos\\OPENGLBOOK\\OPENGLBOOK\\fragCShader.glsl"
 
 float cameraX, cameraY, cameraZ;
 float torLocX, torLocY, torLocZ;
-unsigned int renderingProgram;
+unsigned int renderingProgram, renderingProgramCubeMap;
 unsigned int vao[numVAOs];
 unsigned int vbo[numVBOs];
 unsigned int brickTexture, skyboxTexture;
@@ -125,6 +127,7 @@ void setupVertices(void)
 void init(GLFWwindow* window) 
 {
 	renderingProgram = utils::createShaderProgram(vShaderPath1, fShaderPath1);
+	renderingProgramCubeMap = utils::createShaderProgram(vShaderPath2, fShaderPath2);
 
 	glfwGetFramebufferSize(window, &width, &height);
 	aspect = (float)width / (float)height;
@@ -133,7 +136,8 @@ void init(GLFWwindow* window)
 	setupVertices();
 
 	brickTexture = utils::loadTexture("brick1.jpg");
-	skyboxTexture = utils::loadTexture("alien.jpg");
+	skyboxTexture = utils::loadCubeMap("cubeMap");
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	torLocX = 0.0f; torLocY = -0.75f; torLocZ = 0.0f;
 	cameraX = 0.0f; cameraY = 0.0f; cameraZ = 5.0f;
@@ -151,7 +155,7 @@ void display(GLFWwindow* window, double currTime)
 
 	// draw cube map
 
-	glUseProgram(renderingProgram);
+	glUseProgram(renderingProgramCubeMap);
 
 	mMat = glm::translate(glm::mat4(1.0f), glm::vec3(cameraX, cameraY, cameraZ));
 	mvMat = vMat * mMat;
@@ -166,12 +170,8 @@ void display(GLFWwindow* window, double currTime)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(1);
-
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, skyboxTexture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
 
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);

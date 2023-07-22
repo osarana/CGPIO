@@ -163,6 +163,7 @@
     <ClCompile Include="src\vendor\SOIL2\wfETC.c" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="fragCshader.glsl" />
     <None Include="fragShader.glsl" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
     <None Include="src\vendor\glm\detail\func_common_simd.inl" />
@@ -304,6 +305,7 @@
     <None Include="src\vendor\glm\gtx\vector_query.inl" />
     <None Include="src\vendor\glm\gtx\wrap.inl" />
     <None Include="util.glsl" />
+    <None Include="vertCshader.glsl" />
     <None Include="vertShader.glsl" />
   </ItemGroup>
   <ItemGroup>
@@ -621,6 +623,12 @@
   <ItemGroup>
     <Image Include="alien.jpg" />
     <Image Include="brick1.jpg" />
+    <Image Include="cubeMap\xn.jpg" />
+    <Image Include="cubeMap\xp.jpg" />
+    <Image Include="cubeMap\yn.jpg" />
+    <Image Include="cubeMap\yp.jpg" />
+    <Image Include="cubeMap\zn.jpg" />
+    <Image Include="cubeMap\zp.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

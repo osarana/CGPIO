@@ -467,6 +467,8 @@
     <None Include="src\vendor\glm\gtx\wrap.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="vertCshader.glsl" />
+    <None Include="fragCshader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\utils.h">
@@ -1405,6 +1407,24 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="brick1.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="cubeMap\xn.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="cubeMap\xp.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="cubeMap\yn.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="cubeMap\yp.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="cubeMap\zn.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="cubeMap\zp.jpg">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
