@@ -40,6 +40,11 @@ void Sphere::init(int prec)
 		normals.push_back(glm::vec3()); // push back normal vectors in vector
 	}
 
+	for (int i = 0; i < numVertices; i++)
+	{
+		tangents.push_back(glm::vec3());
+	}
+
 	for (int i = 0; i < numIndices; i++)
 	{
 		indices.push_back(0); // increase vector size by 1
@@ -56,6 +61,13 @@ void Sphere::init(int prec)
 			vertices[i * (prec + 1) + j] = glm::vec3(x, y, z);
 			texCoords[i * (prec + 1) + j] = glm::vec2(((float)j / prec), ((float)i / prec));
 			normals[i * (prec + 1) + j] = glm::vec3(x, y, z);
+
+			if (((x == 0) && (y == 1) && (z == 0)) || ((x == 0) && (y == -1) && (z == 0)))
+			{
+				tangents[i * (prec + 1) + j] = glm::vec3(0.0f, 0.0f, -1.0f);
+			} else {
+				tangents[i * (prec + 1) + j] = glm::cross(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(x, y, z));
+			}
 		}
 	}
 
@@ -81,3 +93,4 @@ std::vector<int> Sphere::getIndices() { return indices; }
 std::vector<glm::vec3> Sphere::getVertices() { return vertices; }
 std::vector<glm::vec2> Sphere::getTexCoords() { return texCoords; }
 std::vector<glm::vec3> Sphere::getNormals() { return normals; }
+std::vector<glm::vec3> Sphere::getTangents() { return tangents; }

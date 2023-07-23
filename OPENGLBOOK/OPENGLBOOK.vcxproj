@@ -618,6 +618,9 @@
     <ClInclude Include="src\vendor\SOIL2\stb_image_write.h" />
     <ClInclude Include="src\vendor\SOIL2\wfETC.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="castleroofNORMAL.jpg" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
