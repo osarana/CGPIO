@@ -23,44 +23,40 @@ float toRadians(float degrees) { return (degrees * 2.0f * 3.14159f) / 360.0f; }
 
 #define vShaderPath1 "c:\\Users\\oscar\\source\\repos\\OPENGLBOOK\\OPENGLBOOK\\vertShader.glsl"
 #define fShaderPath1 "C:\\Users\\oscar\\source\\repos\\OPENGLBOOK\\OPENGLBOOK\\fragShader.glsl"
-#define vShaderPath2 "c:\\Users\\oscar\\source\\repos\\OPENGLBOOK\\OPENGLBOOK\\vertCShader.glsl"
-#define fShaderPath2 "C:\\Users\\oscar\\source\\repos\\OPENGLBOOK\\OPENGLBOOK\\fragCShader.glsl"
 
 float cameraX, cameraY, cameraZ;
 float torLocX, torLocY, torLocZ;
-unsigned int renderingProgram, renderingProgramCubeMap;
+float lightLocX, lightLocY, lightLocZ;
+unsigned int renderingProgram;
 unsigned int vao[numVAOs];
 unsigned int vbo[numVBOs];
-unsigned int brickTexture, skyboxTexture;
-float rotAmt = 0.0f;
 
 // ALLOCATE VARIABLES USED IN DISPLAY() FUNCTION, SO NO NEED TO ALLOCATE DURING RENDERING.
-GLuint vLoc, mvLoc, projLoc, nLoc;
+GLuint mvLoc, projLoc, nLoc;
 int width, height;
 float aspect;
 glm::mat4 pMat, vMat, mMat, mvMat, invTrMat;
+unsigned int globalAmbLoc, ambLoc, diffLoc, specLoc, posLoc, mambLoc, mdiffLoc, mspecLoc, mshiLoc;
+glm::vec3 currentLightPos;
+float lightPos[3];
 
-Torus myTorus(0.8f, 0.4f, 48);
+Torus myTorus(0.5f, 0.2f, 48);
 int numTorusVertices, numTorusIndices;
+
+// white light
+float globalAmbient[4] = { 0.7f, 0.7f, 0.7f, 1.0f };
+float lightAmbient[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+float lightDiffuse[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+float lightSpecular[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+// gold material
+float* matAmb = utils::goldAmbient();
+float* matDif = utils::goldDiffuse();
+float* matSpe = utils::goldSpecular();
+float matShi = utils::goldShininess();
 
 void setupVertices(void)
 {
-	float cubeVertexPositions[108] =
-	{ 
-		-1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f, 1.0f,  1.0f, -1.0f, -1.0f,  1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f, 1.0f, -1.0f,  1.0f, 1.0f,  1.0f, -1.0f,
-		1.0f, -1.0f,  1.0f, 1.0f,  1.0f,  1.0f, 1.0f,  1.0f, -1.0f,
-		1.0f, -1.0f,  1.0f, -1.0f, -1.0f,  1.0f, 1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f, -1.0f,  1.0f,  1.0f, 1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f, -1.0f, -1.0f,  1.0f, -1.0f, -1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,  1.0f,
-		-1.0f,  1.0f, -1.0f, 1.0f,  1.0f, -1.0f, 1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f, -1.0f,  1.0f,  1.0f, -1.0f,  1.0f, -1.0f
-	};
-
 	numTorusVertices = myTorus.getNumVertices();
 	numTorusIndices = myTorus.getNumIndices();
 
@@ -90,10 +86,10 @@ void setupVertices(void)
 	glGenBuffers(numVBOs, vbo);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertexPositions), cubeVertexPositions, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, pvalues.size() * 4, &pvalues[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER, pvalues.size() * 4, &pvalues[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, tvalues.size() * 4, &tvalues[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
 	glBufferData(GL_ARRAY_BUFFER, nvalues.size() * 4, &nvalues[0], GL_STATIC_DRAW);
@@ -102,55 +98,53 @@ void setupVertices(void)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, ind.size() * 4, &ind[0], GL_STATIC_DRAW);
 }
 
+void installLights(glm::mat4 vMatrix)
+{
+	glm::vec3 transformed = glm::vec3(vMatrix * glm::vec4(currentLightPos, 1.0));
+	lightPos[0] = transformed.x;
+	lightPos[1] = transformed.y;
+	lightPos[2] = transformed.z;
+
+	globalAmbLoc = glGetUniformLocation(renderingProgram, "globalAmbient");
+	ambLoc = glGetUniformLocation(renderingProgram, "light.ambient");
+	diffLoc = glGetUniformLocation(renderingProgram, "light.diffuse");
+	specLoc = glGetUniformLocation(renderingProgram, "light.specular");
+	posLoc = glGetUniformLocation(renderingProgram, "light.position");
+	mambLoc = glGetUniformLocation(renderingProgram, "material.ambient");
+	mdiffLoc = glGetUniformLocation(renderingProgram, "material.diffuse");
+	mspecLoc = glGetUniformLocation(renderingProgram, "material.specular");
+	mshiLoc = glGetUniformLocation(renderingProgram, "material.shininess");
+
+	glProgramUniform4fv(renderingProgram, globalAmbLoc, 1, globalAmbient);
+	glProgramUniform4fv(renderingProgram, ambLoc, 1, lightAmbient);
+	glProgramUniform4fv(renderingProgram, diffLoc, 1, lightDiffuse);
+	glProgramUniform4fv(renderingProgram, specLoc, 1, lightSpecular);
+	glProgramUniform3fv(renderingProgram, posLoc, 1, lightPos);
+	glProgramUniform4fv(renderingProgram, mambLoc, 1, matAmb);
+	glProgramUniform4fv(renderingProgram, mdiffLoc, 1, matDif);
+	glProgramUniform4fv(renderingProgram, mspecLoc, 1, matSpe);
+	glProgramUniform1f(renderingProgram, mshiLoc, matShi);
+}
+
 void init(GLFWwindow* window) 
 {
 	renderingProgram = utils::createShaderProgram(vShaderPath1, fShaderPath1);
-	renderingProgramCubeMap = utils::createShaderProgram(vShaderPath2, fShaderPath2);
+	cameraX = 0.0f; cameraY = 0.0f; cameraZ = 1.0f;
+	torLocX = 0.0f; torLocY = 0.0f; torLocZ = -1.0f;
 
 	glfwGetFramebufferSize(window, &width, &height);
 	aspect = (float)width / (float)height;
 	pMat = glm::perspective(1.0472f, aspect, 0.1f, 1000.0f);
 
+	lightLocX = 5.0f; lightLocY = 2.0f; lightLocZ = 2.0f;
 	setupVertices();
-
-	skyboxTexture = utils::loadCubeMap("cubeMap");
-	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
-	torLocX = 0.0f; torLocY = 0.0f; torLocZ = 0.0f;
-	cameraX = 0.0f; cameraY = 0.0f; cameraZ = 5.0f;
 }
 
 void display(GLFWwindow* window, double currTime)
 {
 	glClear(GL_DEPTH_BUFFER_BIT);
+	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
-
-	vMat = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraX, -cameraY, -cameraZ));
-
-	// draw cube map
-
-	glUseProgram(renderingProgramCubeMap);
-
-	vLoc = glGetUniformLocation(renderingProgramCubeMap, "v_matrix");
-	glUniformMatrix4fv(vLoc, 1, GL_FALSE, glm::value_ptr(vMat));
-
-	projLoc = glGetUniformLocation(renderingProgramCubeMap, "p_matrix");
-	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(0);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
-
-	glEnable(GL_CULL_FACE);
-	glFrontFace(GL_CCW);
-	glDisable(GL_DEPTH_TEST);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-	glEnable(GL_DEPTH_TEST);
-
-	// draw scene (just a torus)
 
 	glUseProgram(renderingProgram);
 
@@ -158,19 +152,20 @@ void display(GLFWwindow* window, double currTime)
 	projLoc = glGetUniformLocation(renderingProgram, "proj_matrix");
 	nLoc = glGetUniformLocation(renderingProgram, "norm_matrix");
 
-	rotAmt = currTime * 0.5f;
+	vMat = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraX, -cameraY, -cameraZ));
 	mMat = glm::translate(glm::mat4(1.0f), glm::vec3(torLocX, torLocY, torLocZ));
-	mMat = glm::rotate(mMat, rotAmt, glm::vec3(1.0f, 0.0f, 0.0f));
-
+	mMat = glm::rotate(mMat, toRadians(35.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	mvMat = vMat * mMat;
-
 	invTrMat = glm::transpose(glm::inverse(mvMat));
+
+	currentLightPos = glm::vec3(lightLocX, lightLocY, lightLocZ);
+	installLights(vMat);
 
 	glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat));
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
 	glUniformMatrix4fv(nLoc, 1, GL_FALSE, glm::value_ptr(invTrMat));
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
 
@@ -178,16 +173,11 @@ void display(GLFWwindow* window, double currTime)
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(1);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
-
-	glClear(GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
-	glDepthFunc(GL_LEQUAL);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
-	glDrawElements(GL_TRIANGLES, numTorusIndices, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, myTorus.getIndices().size(), GL_UNSIGNED_INT, 0);
 }
 
 
