@@ -19,72 +19,48 @@ using namespace std;
 float toRadians(float degrees) { return (degrees * 2.0f * 3.14159f) / 360.0f; }
 
 #define numVAOs 1
-#define numVBOs 4
+#define numVBOs 3
 
 #define vShaderPath1 "c:\\Users\\oscar\\source\\repos\\OPENGLBOOK\\OPENGLBOOK\\vertShader.glsl"
 #define fShaderPath1 "C:\\Users\\oscar\\source\\repos\\OPENGLBOOK\\OPENGLBOOK\\fragShader.glsl"
 
 float cameraX, cameraY, cameraZ;
-float sphLocX, sphLocY, sphLocZ;
-float lightLocX, lightLocY, lightLocZ;
+float gndLocX, gndLocY, gndLocZ;
 unsigned int renderingProgram;
 unsigned int vao[numVAOs];
 unsigned int vbo[numVBOs];
 
 // ALLOCATE VARIABLES USED IN DISPLAY() FUNCTION, SO NO NEED TO ALLOCATE DURING RENDERING.
-GLuint mvLoc, projLoc, nLoc;
+GLuint mvLoc, projLoc;
 int width, height;
 float aspect;
-glm::mat4 pMat, vMat, mMat, mvMat, invTrMat;
-unsigned int globalAmbLoc, ambLoc, diffLoc, specLoc, posLoc, mambLoc, mdiffLoc, mspecLoc, mshiLoc;
-glm::vec3 currentLightPos;
-float lightPos[3];
-float rotAmt = 0.0f;
+glm::mat4 pMat, vMat, mMat, mvMat;
 
-Sphere mySphere(48);
-int numSphereVertices;
+ImportedModel ground("grid.obj");
+int numGroundVertices;
 
-unsigned int moonTexture, moonNormalMap;
-
-// white light
-float globalAmbient[4] = { 0.7f, 0.7f, 0.7f, 1.0f };
-float lightAmbient[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-float lightDiffuse[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-float lightSpecular[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-// silver material
-float* matAmb = utils::silverAmbient();
-float* matDif = utils::silverDiffuse();
-float* matSpe = utils::silverSpecular();
-float matShi = utils::silverShininess();
+unsigned int heightMap, heightTexture;
 
 void setupVertices(void)
 {
-	numSphereVertices = mySphere.getNumIndices();
-
-	std::vector<int> ind = mySphere.getIndices();
-	std::vector<glm::vec3> vert = mySphere.getVertices();
-	std::vector<glm::vec2> tex = mySphere.getTexCoords();
-	std::vector<glm::vec3> norm = mySphere.getNormals();
-	std::vector<glm::vec3> tang = mySphere.getTangents();
+	numGroundVertices = ground.getNumVertices();
+	std::vector<glm::vec3> vert = ground.getVertices();
+	std::vector<glm::vec2> tex = ground.getTextureCoordinates();
+	std::vector<glm::vec3> norm = ground.getNormals();
 
 	std::vector<float> pvalues;
 	std::vector<float> tvalues;
 	std::vector<float> nvalues;
-	std::vector<float> tanvalues;
 
-	for (int i = 0; i < mySphere.getNumIndices(); i++) {
-		pvalues.push_back((vert[ind[i]]).x);
-		pvalues.push_back((vert[ind[i]]).y);
-		pvalues.push_back((vert[ind[i]]).z);
-		tvalues.push_back((tex[ind[i]]).s);
-		tvalues.push_back((tex[ind[i]]).t);
-		nvalues.push_back((norm[ind[i]]).x);
-		nvalues.push_back((norm[ind[i]]).y);
-		nvalues.push_back((norm[ind[i]]).z);
-		tanvalues.push_back((tang[ind[i]]).x);
-		tanvalues.push_back((tang[ind[i]]).y);
-		tanvalues.push_back((tang[ind[i]]).z);
+	for (int i = 0; i < numGroundVertices; i++) {
+		pvalues.push_back((vert[i]).x);
+		pvalues.push_back((vert[i]).y);
+		pvalues.push_back((vert[i]).z);
+		tvalues.push_back((tex[i]).s);
+		tvalues.push_back((tex[i]).t);
+		nvalues.push_back((norm[i]).x);
+		nvalues.push_back((norm[i]).y);
+		nvalues.push_back((norm[i]).z);
 	}
 
 	glGenVertexArrays(1, vao);
@@ -99,45 +75,13 @@ void setupVertices(void)
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
 	glBufferData(GL_ARRAY_BUFFER, nvalues.size() * 4, &nvalues[0], GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
-	glBufferData(GL_ARRAY_BUFFER, tanvalues.size() * 4, &tanvalues[0], GL_STATIC_DRAW);
-}
-
-void installLights(glm::mat4 vMatrix)
-{
-	glm::vec3 transformed = glm::vec3(vMatrix * glm::vec4(currentLightPos, 1.0));
-	lightPos[0] = transformed.x;
-	lightPos[1] = transformed.y;
-	lightPos[2] = transformed.z;
-
-	globalAmbLoc = glGetUniformLocation(renderingProgram, "globalAmbient");
-	ambLoc = glGetUniformLocation(renderingProgram, "light.ambient");
-	diffLoc = glGetUniformLocation(renderingProgram, "light.diffuse");
-	specLoc = glGetUniformLocation(renderingProgram, "light.specular");
-	posLoc = glGetUniformLocation(renderingProgram, "light.position");
-	mambLoc = glGetUniformLocation(renderingProgram, "material.ambient");
-	mdiffLoc = glGetUniformLocation(renderingProgram, "material.diffuse");
-	mspecLoc = glGetUniformLocation(renderingProgram, "material.specular");
-	mshiLoc = glGetUniformLocation(renderingProgram, "material.shininess");
-
-	glProgramUniform4fv(renderingProgram, globalAmbLoc, 1, globalAmbient);
-	glProgramUniform4fv(renderingProgram, ambLoc, 1, lightAmbient);
-	glProgramUniform4fv(renderingProgram, diffLoc, 1, lightDiffuse);
-	glProgramUniform4fv(renderingProgram, specLoc, 1, lightSpecular);
-	glProgramUniform3fv(renderingProgram, posLoc, 1, lightPos);
-	glProgramUniform4fv(renderingProgram, mambLoc, 1, matAmb);
-	glProgramUniform4fv(renderingProgram, mdiffLoc, 1, matDif);
-	glProgramUniform4fv(renderingProgram, mspecLoc, 1, matSpe);
-	glProgramUniform1f(renderingProgram, mshiLoc, matShi);
 }
 
 void init(GLFWwindow* window) 
 {
 	renderingProgram = utils::createShaderProgram(vShaderPath1, fShaderPath1);
-	cameraX = 0.0f; cameraY = 0.0f; cameraZ = 2.0f;
-	sphLocX = 0.0f; sphLocY = 0.0f; sphLocZ = -1.0f;
-	lightLocX = -5.0f; lightLocY = 2.0f; lightLocZ = 5.0f;
+	cameraX = 0.03f; cameraY = 0.03f; cameraZ = 0.8f;
+	gndLocX = 0.0f; gndLocY = 0.0f; gndLocZ = -1.0f;
 
 	glfwGetFramebufferSize(window, &width, &height);
 	aspect = (float)width / (float)height;
@@ -145,8 +89,8 @@ void init(GLFWwindow* window)
 
 	setupVertices();
 
-	moonTexture = utils::loadTexture("moon.jpg");
-	moonNormalMap = utils::loadTexture("moonNORMAL.jpg");
+	heightTexture = utils::loadTexture("heightTexture.jpg");
+	heightMap = utils::loadTexture("height.jpg");
 }
 
 void display(GLFWwindow* window, double currTime)
@@ -159,22 +103,14 @@ void display(GLFWwindow* window, double currTime)
 
 	mvLoc = glGetUniformLocation(renderingProgram, "mv_matrix");
 	projLoc = glGetUniformLocation(renderingProgram, "proj_matrix");
-	nLoc = glGetUniformLocation(renderingProgram, "norm_matrix");
 
 	vMat = glm::translate(glm::mat4(1.0f), glm::vec3(-cameraX, -cameraY, -cameraZ));
-	mMat = glm::translate(glm::mat4(1.0f), glm::vec3(sphLocX, sphLocY, sphLocZ));
+	mMat = glm::translate(glm::mat4(1.0f), glm::vec3(gndLocX, gndLocY, gndLocZ));
 	mMat = glm::rotate(mMat, toRadians(20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	mMat = glm::rotate(mMat, rotAmt, glm::vec3(0.0f, 1.0f, 0.0f));
-	rotAmt = currTime * 0.2f - 0.25f;
 	mvMat = vMat * mMat;
-	invTrMat = glm::transpose(glm::inverse(mvMat));
-
-	currentLightPos = glm::vec3(lightLocX, lightLocY, lightLocZ);
-	installLights(vMat);
 
 	glUniformMatrix4fv(mvLoc, 1, GL_FALSE, glm::value_ptr(mvMat));
 	glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(pMat));
-	glUniformMatrix4fv(nLoc, 1, GL_FALSE, glm::value_ptr(invTrMat));
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -188,20 +124,18 @@ void display(GLFWwindow* window, double currTime)
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(2);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(3);
-
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, moonNormalMap);
+	glBindTexture(GL_TEXTURE_2D, heightTexture);
 
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, moonTexture);
+	glBindTexture(GL_TEXTURE_2D, heightMap);
 
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 
-	glDrawArrays(GL_TRIANGLES, 0, numSphereVertices);
+	glDrawArrays(GL_TRIANGLES, 0, numGroundVertices);
 }
 
 
@@ -221,7 +155,7 @@ int main(void)
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	GLFWwindow* window = glfwCreateWindow(600, 600, "Chapter 9 - program 3", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(600, 600, "Chapter 10 - program 4", NULL, NULL);
 	glfwMakeContextCurrent(window);
 
 	if (glewInit() != GLEW_OK)
