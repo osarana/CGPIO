@@ -44,7 +44,7 @@ float rotAmt = 0.0f;
 Sphere mySphere(48);
 int numSphereVertices;
 
-unsigned int roofTexture;
+unsigned int moonTexture, moonNormalMap;
 
 // white light
 float globalAmbient[4] = { 0.7f, 0.7f, 0.7f, 1.0f };
@@ -145,7 +145,8 @@ void init(GLFWwindow* window)
 
 	setupVertices();
 
-	roofTexture = utils::loadTexture("castleroofNORMAL.jpg");
+	moonTexture = utils::loadTexture("moon.jpg");
+	moonNormalMap = utils::loadTexture("moonNORMAL.jpg");
 }
 
 void display(GLFWwindow* window, double currTime)
@@ -164,7 +165,7 @@ void display(GLFWwindow* window, double currTime)
 	mMat = glm::translate(glm::mat4(1.0f), glm::vec3(sphLocX, sphLocY, sphLocZ));
 	mMat = glm::rotate(mMat, toRadians(20.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	mMat = glm::rotate(mMat, rotAmt, glm::vec3(0.0f, 1.0f, 0.0f));
-	rotAmt = currTime * 0.2f;
+	rotAmt = currTime * 0.2f - 0.25f;
 	mvMat = vMat * mMat;
 	invTrMat = glm::transpose(glm::inverse(mvMat));
 
@@ -192,7 +193,10 @@ void display(GLFWwindow* window, double currTime)
 	glEnableVertexAttribArray(3);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, roofTexture);
+	glBindTexture(GL_TEXTURE_2D, moonNormalMap);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, moonTexture);
 
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
